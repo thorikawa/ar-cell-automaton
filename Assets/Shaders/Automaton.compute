@@ -1,0 +1,23 @@
+﻿#pragma kernel CalcNextState
+
+RWStructuredBuffer<uint> _States;
+RWStructuredBuffer<uint> _NextStates;
+uint _Width;
+uint _Height;
+#define MOD 10
+
+[numthreads(8,8,1)]
+void CalcNextState (uint3 id : SV_DispatchThreadID)
+{
+    uint i0 = id.y * _Width + id.x;
+    uint i1 = id.y * _Width + ((id.x + _Width - 1) % _Width); // 上のセル
+    uint i2 = ((id.y + 1) % _Height) * _Width + ((id.x + _Width - 1) % _Width); // 右上のセル
+    uint i3 = ((id.y + 1) % _Height) * _Width + id.x; // 右下のセル
+    uint i4 = id.y * _Width + ((id.x + 1) % _Width); // 下のセル
+    uint i5 = ((id.y + _Height - 1) % _Height) * _Width + ((id.x + 1) % _Width); // 左下のセル
+    uint i6 = ((id.y + _Height - 1) % _Height) * _Width + id.x; // 左上のセル
+    uint d = _States[i0] + _States[i1] + _States[i2] + _States[i3] + _States[i4] + _States[i5] + _States[i6];
+    //uint d = _States[i0] + _States[i3];
+    d = d % MOD;
+    _NextStates[i0] = d;
+}
