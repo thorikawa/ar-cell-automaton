@@ -1,7 +1,11 @@
 ﻿#pragma kernel CalcNextState
+#pragma kernel DrawTexture
 
+StructuredBuffer<float> _Colors;
 RWStructuredBuffer<uint> _States;
 RWStructuredBuffer<uint> _NextStates;
+RWTexture2D<float4> _Texture;
+
 uint _Width;
 uint _Height;
 #define MOD 10
@@ -17,7 +21,22 @@ void CalcNextState (uint3 id : SV_DispatchThreadID)
     uint i5 = ((id.y + _Height - 1) % _Height) * _Width + ((id.x + 1) % _Width); // 左下のセル
     uint i6 = ((id.y + _Height - 1) % _Height) * _Width + id.x; // 左上のセル
     uint d = _States[i0] + _States[i1] + _States[i2] + _States[i3] + _States[i4] + _States[i5] + _States[i6];
-    //uint d = _States[i0] + _States[i3];
     d = d % MOD;
     _NextStates[i0] = d;
+}
+
+[numthreads(8,8,1)]
+void DrawTexture (uint3 id : SV_DispatchThreadID)
+{
+    float scale = 1.0;
+    float ry = (1.15470053838 * (float)id.y) * scale;
+    float rx = ((float)id.x - 0.57735026919 * (float)id.y) * scale;
+    int ix = (floor(ry) + _Width) % _Width;
+    int iy = (floor(rx) + _Height) % _Height;
+
+    uint i0 = iy * _Width + ix;
+    float r = _Colors[3 * _States[i0] + 0];
+    float g = _Colors[3 * _States[i0] + 1];
+    float b = _Colors[3 * _States[i0] + 2];
+    _Texture[id.xy] = float4(r, g, b, 1);
 }
