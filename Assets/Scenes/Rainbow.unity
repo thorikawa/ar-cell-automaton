@@ -772,8 +772,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   computeShader: {fileID: 7200000, guid: 4517bb5408b8a47e083f3b6466829eef, type: 3}
-  width: 512
-  height: 512
+  width: 256
+  height: 256
+  textureWidth: 2048
+  textureHeight: 2048
   debugImage: {fileID: 1656553405}
   colorNum: 10
 --- !u!4 &723004675

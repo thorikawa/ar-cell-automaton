@@ -8,6 +8,8 @@ public class Automaton : MonoBehaviour
     [SerializeField] private ComputeShader computeShader;
     [SerializeField] private int width = 128;
     [SerializeField] private int height = 128;
+    [SerializeField] private int textureWidth = 1024;
+    [SerializeField] private int textureHeight = 1024;
     [SerializeField] private RawImage debugImage;
     [SerializeField] private int colorNum = 20;
 
@@ -24,7 +26,7 @@ public class Automaton : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = 15;
+        Application.targetFrameRate = 10;
 
         kernelIdNextState = computeShader.FindKernel("CalcNextState");
         kernelIdDrawTexture = computeShader.FindKernel("DrawTexture");
@@ -34,7 +36,7 @@ public class Automaton : MonoBehaviour
         stateBuffer = new ComputeBuffer(width * height, sizeof(uint), ComputeBufferType.Raw);
         nextStateBuffer = new ComputeBuffer(width * height, sizeof(uint), ComputeBufferType.Raw);
 
-        targetTexture = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
+        targetTexture = new RenderTexture(textureWidth, textureHeight, 0, RenderTextureFormat.ARGB32);
         targetTexture.enableRandomWrite = true;
         targetTexture.filterMode = FilterMode.Point;
         targetTexture.Create();
@@ -59,6 +61,7 @@ public class Automaton : MonoBehaviour
 
         computeShader.SetInt("_Width", width);
         computeShader.SetInt("_Height", height);
+        computeShader.SetFloat("_R", 16.0f);
         computeShader.SetBuffer(kernelIdNextState, "_States", stateBuffer);
         computeShader.SetBuffer(kernelIdNextState, "_NextStates", nextStateBuffer);
         computeShader.SetTexture(kernelIdDrawTexture, "_Texture", targetTexture);
@@ -83,7 +86,7 @@ public class Automaton : MonoBehaviour
             nextStateBuffer.GetData(stateArray1);
             // Debug.Log(string.Join(",", stateArray1));
         }
-        computeShader.Dispatch(kernelIdDrawTexture, width / 8, height / 8, 1);
+        computeShader.Dispatch(kernelIdDrawTexture, textureWidth / 8, textureHeight / 8, 1);
 
         frame++;
     }
