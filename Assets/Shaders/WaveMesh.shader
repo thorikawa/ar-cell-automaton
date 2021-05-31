@@ -4,11 +4,6 @@
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Intensity ("Color Intensity", float) = 1.0
-        _CycleLength ("Cycle length", float) = 1.0
-        _Speed ("Speed", float) = 1
-        _Width ("Line Width", Range(0.0, 1.0)) = 0.2
-        _MaxAlpha ("Max Alpha", Range(0.0, 1.0)) = 0.8
-        _NumOfSplits ("Number of texture splits", float) = 7.0
     }
     SubShader
     {
@@ -43,11 +38,6 @@
             sampler2D _MainTex;
             float4 _MainTex_ST;
             float _Intensity;
-            float _CycleLength;
-            float _Speed;
-            float _Width;
-            float _MaxAlpha;
-            float _NumOfSplits;
 
             v2f vert (appdata v)
             {
@@ -63,13 +53,7 @@
 
             float4 frag (v2f i) : SV_Target
             {
-                float phase = (-i.worldPos.z + _Speed * _Time.y) / _CycleLength;
-                float colorValue = frac(phase);
-                float alphaValue = frac(phase * _NumOfSplits);
-                float4 col = _Intensity * tex2D(_MainTex, float2(0.5, colorValue));
-                float alpha = (1.0 - step(_Width, alphaValue)) * _MaxAlpha;
-                col.rgb = col.rgb;
-                col.a = 0.0;
+                float4 col = _Intensity * tex2D(_MainTex, float2(i.worldPos.x / 5.0, i.worldPos.z / 5.0));
                 return col;
             }
             ENDCG

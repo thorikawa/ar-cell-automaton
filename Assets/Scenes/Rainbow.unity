@@ -268,7 +268,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 287866805}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 5}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -386,7 +386,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &352854566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -543,7 +543,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 816b289ef451e094f9ae174fb4cf8db0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UseCustomMaterial: 1
+  m_UseCustomMaterial: 0
   m_CustomMaterial: {fileID: 2100000, guid: 55f28ca0fa7c7482393921e175ddeaee, type: 2}
 --- !u!114 &571260625
 MonoBehaviour:
@@ -753,7 +753,7 @@ GameObject:
   - component: {fileID: 723004675}
   - component: {fileID: 723004674}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Automaton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -772,11 +772,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   computeShader: {fileID: 7200000, guid: 4517bb5408b8a47e083f3b6466829eef, type: 3}
-  textureWidth: 4096
-  textureHeight: 4096
+  textureWidth: 2048
+  textureHeight: 2048
   debugImage: {fileID: 1656553405}
   colorNum: 10
-  radius: 20
+  radius: 10
+  meshMaterial: {fileID: 2100000, guid: 5544c4318fe894088b4bcf69925c7fc7, type: 2}
+  fps: 10
 --- !u!4 &723004675
 Transform:
   m_ObjectHideFlags: 0

@@ -57,9 +57,10 @@ void DrawTexture (uint3 id : SV_DispatchThreadID)
         cx = cx + 1;
     }
     uint i0 = ((cy + _Height) % _Height) * _Width + (cx % _Width);
-    float r = _Colors[3 * _States[i0] + 0];
-    float g = _Colors[3 * _States[i0] + 1];
-    float b = _Colors[3 * _States[i0] + 2];
-    _Texture[id.xy] = float4(r, g, b, 1);
+    float r = _Colors[4 * _States[i0] + 0];
+    float g = _Colors[4 * _States[i0] + 1];
+    float b = _Colors[4 * _States[i0] + 2];
+    float a = _Colors[4 * _States[i0] + 3];
+    _Texture[id.xy] = float4(r, g, b, a);
     //_Texture[id.xy] = float4(fx / _R, fy / _R, 0, 1);
 }

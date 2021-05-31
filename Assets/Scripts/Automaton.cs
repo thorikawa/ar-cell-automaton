@@ -11,6 +11,8 @@ public class Automaton : MonoBehaviour
     [SerializeField] private RawImage debugImage;
     [SerializeField] private int colorNum = 20;
     [SerializeField] private float radius = 16.0f;
+    [SerializeField] private Material meshMaterial;
+    [SerializeField] private float fps = 10.0f;
     private int patternWidth = 512;
     private int patternHeight = 512;
 
@@ -27,7 +29,7 @@ public class Automaton : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Application.targetFrameRate = 10;
+        // Application.targetFrameRate = 10;
 
         kernelIdNextState = computeShader.FindKernel("CalcNextState");
         kernelIdDrawTexture = computeShader.FindKernel("DrawTexture");
@@ -42,7 +44,9 @@ public class Automaton : MonoBehaviour
         targetTexture = new RenderTexture(textureWidth, textureHeight, 0, RenderTextureFormat.ARGB32);
         targetTexture.enableRandomWrite = true;
         targetTexture.filterMode = FilterMode.Point;
+        targetTexture.wrapMode = TextureWrapMode.Repeat;
         targetTexture.Create();
+        meshMaterial.mainTexture = targetTexture;
         debugImage.texture = targetTexture;
 
         var unitx = 1.5f * radius;
@@ -53,15 +57,17 @@ public class Automaton : MonoBehaviour
         var center = cy * patternWidth + cx;
         stateArray1[center] = 1;
 
-        var colorArray = new float[3 * colorNum];
+        var colorArray = new float[4 * colorNum];
         for (var i = 0; i < colorNum; i++)
         {
             var color = Color.HSVToRGB((float)i / (float)colorNum, (float)i / (float)colorNum, 1f);
-            colorArray[3 * i + 0] = color.r;
-            colorArray[3 * i + 1] = color.g;
-            colorArray[3 * i + 2] = color.b;
+            colorArray[4 * i + 0] = color.r;
+            colorArray[4 * i + 1] = color.g;
+            colorArray[4 * i + 2] = color.b;
+            colorArray[4 * i + 3] = 0.5f;
         }
-        colorBuffer = new ComputeBuffer(3 * colorNum, sizeof(float), ComputeBufferType.Raw);
+        colorArray[3] = 0;
+        colorBuffer = new ComputeBuffer(4 * colorNum, sizeof(float), ComputeBufferType.Raw);
         colorBuffer.SetData(colorArray);
 
         computeShader.SetInt("_Width", patternWidth);
@@ -72,24 +78,33 @@ public class Automaton : MonoBehaviour
         computeShader.SetTexture(kernelIdDrawTexture, "_Texture", targetTexture);
         computeShader.SetBuffer(kernelIdDrawTexture, "_States", nextStateBuffer);
         computeShader.SetBuffer(kernelIdDrawTexture, "_Colors", colorBuffer);
+
+        StartCoroutine(FpsLoop());
+    }
+
+    IEnumerator FpsLoop()
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(0.999f / fps);
+            LocalUpdate();
+        }
     }
 
     // Update is called once per frame
-    void Update()
+    void LocalUpdate()
     {
         if (frame % 2 == 0)
         {
             stateBuffer.SetData(stateArray1);
             computeShader.Dispatch(kernelIdNextState, patternWidth / 8, patternHeight / 8, 1);
             nextStateBuffer.GetData(stateArray2);
-            // Debug.Log(string.Join(",", stateArray2));
         }
         else
         {
             stateBuffer.SetData(stateArray2);
             computeShader.Dispatch(kernelIdNextState, patternWidth / 8, patternHeight / 8, 1);
             nextStateBuffer.GetData(stateArray1);
-            // Debug.Log(string.Join(",", stateArray1));
         }
         computeShader.Dispatch(kernelIdDrawTexture, textureWidth / 8, textureHeight / 8, 1);
 
