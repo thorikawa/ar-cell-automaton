@@ -6,12 +6,13 @@ using UnityEngine.UI;
 public class Automaton : MonoBehaviour
 {
     [SerializeField] private ComputeShader computeShader;
-    [SerializeField] private int width = 128;
-    [SerializeField] private int height = 128;
     [SerializeField] private int textureWidth = 1024;
     [SerializeField] private int textureHeight = 1024;
     [SerializeField] private RawImage debugImage;
     [SerializeField] private int colorNum = 20;
+    [SerializeField] private float radius = 16.0f;
+    private int patternWidth = 512;
+    private int patternHeight = 512;
 
     private int kernelIdNextState;
     private int kernelIdDrawTexture;
@@ -31,10 +32,12 @@ public class Automaton : MonoBehaviour
         kernelIdNextState = computeShader.FindKernel("CalcNextState");
         kernelIdDrawTexture = computeShader.FindKernel("DrawTexture");
 
-        stateArray1 = new uint[width * height];
-        stateArray2 = new uint[width * height];
-        stateBuffer = new ComputeBuffer(width * height, sizeof(uint), ComputeBufferType.Raw);
-        nextStateBuffer = new ComputeBuffer(width * height, sizeof(uint), ComputeBufferType.Raw);
+        Debug.Log($"{patternWidth} x {patternHeight}");
+
+        stateArray1 = new uint[patternWidth * patternHeight];
+        stateArray2 = new uint[patternWidth * patternHeight];
+        stateBuffer = new ComputeBuffer(patternWidth * patternHeight, sizeof(uint), ComputeBufferType.Raw);
+        nextStateBuffer = new ComputeBuffer(patternWidth * patternHeight, sizeof(uint), ComputeBufferType.Raw);
 
         targetTexture = new RenderTexture(textureWidth, textureHeight, 0, RenderTextureFormat.ARGB32);
         targetTexture.enableRandomWrite = true;
@@ -42,11 +45,13 @@ public class Automaton : MonoBehaviour
         targetTexture.Create();
         debugImage.texture = targetTexture;
 
-        for (var i = 0; i < 1; i++)
-        {
-            var idx = width * Random.Range(0, height - 1) + Random.Range(0, width - 1);
-            stateArray1[idx] = 1;
-        }
+        var unitx = 1.5f * radius;
+        var unity = 1.73205080757f * radius;
+        var normalLen = 0.86602540378f * radius;
+        int cx = (int)Mathf.Floor(textureWidth / 2f / unitx);
+        int cy = (int)Mathf.Floor((textureHeight / 2f - normalLen * (float)cx) / unity);
+        var center = cy * patternWidth + cx;
+        stateArray1[center] = 1;
 
         var colorArray = new float[3 * colorNum];
         for (var i = 0; i < colorNum; i++)
@@ -59,9 +64,9 @@ public class Automaton : MonoBehaviour
         colorBuffer = new ComputeBuffer(3 * colorNum, sizeof(float), ComputeBufferType.Raw);
         colorBuffer.SetData(colorArray);
 
-        computeShader.SetInt("_Width", width);
-        computeShader.SetInt("_Height", height);
-        computeShader.SetFloat("_R", 16.0f);
+        computeShader.SetInt("_Width", patternWidth);
+        computeShader.SetInt("_Height", patternHeight);
+        computeShader.SetFloat("_R", radius);
         computeShader.SetBuffer(kernelIdNextState, "_States", stateBuffer);
         computeShader.SetBuffer(kernelIdNextState, "_NextStates", nextStateBuffer);
         computeShader.SetTexture(kernelIdDrawTexture, "_Texture", targetTexture);
@@ -75,14 +80,14 @@ public class Automaton : MonoBehaviour
         if (frame % 2 == 0)
         {
             stateBuffer.SetData(stateArray1);
-            computeShader.Dispatch(kernelIdNextState, width / 8, height / 8, 1);
+            computeShader.Dispatch(kernelIdNextState, patternWidth / 8, patternHeight / 8, 1);
             nextStateBuffer.GetData(stateArray2);
             // Debug.Log(string.Join(",", stateArray2));
         }
         else
         {
             stateBuffer.SetData(stateArray2);
-            computeShader.Dispatch(kernelIdNextState, width / 8, height / 8, 1);
+            computeShader.Dispatch(kernelIdNextState, patternWidth / 8, patternHeight / 8, 1);
             nextStateBuffer.GetData(stateArray1);
             // Debug.Log(string.Join(",", stateArray1));
         }

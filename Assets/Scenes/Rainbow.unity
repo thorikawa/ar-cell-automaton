@@ -772,12 +772,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   computeShader: {fileID: 7200000, guid: 4517bb5408b8a47e083f3b6466829eef, type: 3}
-  width: 256
-  height: 256
-  textureWidth: 2048
-  textureHeight: 2048
+  textureWidth: 4096
+  textureHeight: 4096
   debugImage: {fileID: 1656553405}
   colorNum: 10
+  radius: 20
 --- !u!4 &723004675
 Transform:
   m_ObjectHideFlags: 0
@@ -893,7 +892,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1024, y: 1024}
+  m_SizeDelta: {x: 2048, y: 2048}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1656553405
 MonoBehaviour:
