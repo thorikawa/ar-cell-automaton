@@ -4,6 +4,8 @@
     {
         _MainTex ("Texture", 2D) = "white" {}
         _Intensity ("Color Intensity", float) = 1.0
+        _Alpha ("Alpha", float) = 1.0
+        _Scale ("Scale", float) = 1.0
     }
     SubShader
     {
@@ -25,6 +27,7 @@
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
                 float3 normal : NORMAL;
+                uint vid : SV_VertexID;
             };
 
             struct v2f
@@ -33,27 +36,41 @@
                 float3 worldPos : TEXCOORD1;
                 float worldRefl : TEXCOORD2;
                 float4 vertex : SV_POSITION;
+                float size : PSIZE;
             };
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
             float _Intensity;
+            float _Alpha;
+            float _Scale;
 
             v2f vert (appdata v)
             {
                 v2f o;
+                
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+
+                float4 col = tex2Dlod(_MainTex, float4(o.uv.x, o.uv.y, 0, 0));
+                v.vertex.y = col.a * 0.25;
+
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex);
                 float3 worldViewDir = normalize(UnityWorldSpaceViewDir(o.worldPos));
                 float3 worldNormal = mul(unity_ObjectToWorld, v.normal);
+
                 o.worldRefl = dot(worldViewDir, worldNormal);
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.size = 2.0;
+
                 return o;
             }
 
             float4 frag (v2f i) : SV_Target
             {
-                float4 col = _Intensity * tex2D(_MainTex, float2(i.worldPos.x / 5.0, i.worldPos.z / 5.0));
+                float4 col = _Intensity * tex2D(_MainTex, i.uv);
+                col.a = step(0.01, col.a);
+                //col.a *= _Alpha;
+                //col = float4(1, 1, 1, 1);
                 return col;
             }
             ENDCG

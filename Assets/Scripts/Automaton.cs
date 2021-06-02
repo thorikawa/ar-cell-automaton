@@ -11,7 +11,9 @@ public class Automaton : MonoBehaviour
     [SerializeField] private RawImage debugImage;
     [SerializeField] private int colorNum = 20;
     [SerializeField] private float radius = 16.0f;
-    [SerializeField] private Material meshMaterial;
+    [SerializeField] private Renderer targetRenderer;
+    [SerializeField] private Material targetMaterial;
+    [SerializeField] private MeshFilter targetMesh;
     [SerializeField] private float fps = 10.0f;
     private int patternWidth = 512;
     private int patternHeight = 512;
@@ -46,7 +48,14 @@ public class Automaton : MonoBehaviour
         targetTexture.filterMode = FilterMode.Point;
         targetTexture.wrapMode = TextureWrapMode.Repeat;
         targetTexture.Create();
-        meshMaterial.mainTexture = targetTexture;
+        if (targetRenderer)
+        {
+            targetRenderer.material.mainTexture = targetTexture;
+        }
+        if (targetMaterial)
+        {
+            targetMaterial.mainTexture = targetTexture;
+        }
         debugImage.texture = targetTexture;
 
         var unitx = 1.5f * radius;
@@ -64,9 +73,8 @@ public class Automaton : MonoBehaviour
             colorArray[4 * i + 0] = color.r;
             colorArray[4 * i + 1] = color.g;
             colorArray[4 * i + 2] = color.b;
-            colorArray[4 * i + 3] = 0.5f;
+            colorArray[4 * i + 3] = (float)i / (float) colorNum;
         }
-        colorArray[3] = 0;
         colorBuffer = new ComputeBuffer(4 * colorNum, sizeof(float), ComputeBufferType.Raw);
         colorBuffer.SetData(colorArray);
 
@@ -78,6 +86,10 @@ public class Automaton : MonoBehaviour
         computeShader.SetTexture(kernelIdDrawTexture, "_Texture", targetTexture);
         computeShader.SetBuffer(kernelIdDrawTexture, "_States", nextStateBuffer);
         computeShader.SetBuffer(kernelIdDrawTexture, "_Colors", colorBuffer);
+
+        var mesh = DepthUtils.MakeEmptyMesh(textureWidth, textureWidth);
+        targetMesh.mesh = mesh;
+        targetMesh.GetComponent<Renderer>().material.mainTexture = targetTexture;
 
         StartCoroutine(FpsLoop());
     }
